@@ -1,0 +1,32 @@
+{
+  "name": "@gargakshit/deno-book",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A book about deno",
+  "author": "Akshit Garg <garg.akshit@gmail.com> (@thepotatokitty)",
+  "license": "MIT",
+  "scripts": {
+    "build": "gatsby build",
+    "start": "gatsby develop",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean"
+  },
+  "dependencies": {
+    "@rocketseat/gatsby-theme-docs": "latest",
+    "gatsby": "latest",
+    "gatsby-plugin-canonical-urls": "^2.1.19",
+    "gatsby-plugin-sitemap": "^2.2.26",
+    "prop-types": "^15.7.2",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "gatsby",
+    "rocketseat",
+    "gatsby-starter",
+    "deno",
+    "javascript",
+    "typescript"
+  ]
+}

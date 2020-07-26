@@ -1,0 +1,29 @@
+---
+title: Introduction
+---
+
+Have you heard of a new thing that recently appeared in the while? Of-course its deno.
+
+## So what is deno?
+
+Deno is a simple, modern and secure runtime for JavaScript and TypeScript that uses V8 and is built in Rust.
+
+Well this looks like another JavaScript runtime. But trust me it isn't.
+
+## What sets deno apart from node?
+
+Deno is secure by default, meaning that applications have no permission (like filesystem, network, etc) unless explicitly mentioned.
+Deno also includes built-in tooling like a dependency inspector and a formatter.
+It also includes a large set of standard modules, which is missing in node, meaning a warm goodbye to packages like `uuid`.
+
+So enough of this theory, let's jump straight into into code.
+
+## Hello World
+
+Well before doing anything else, we need to install deno into our systems. https://deno.land has a nice guide on how to do so.
+
+So, after deno is setup and running on your system, its time for a real hello world. So create a new file with the name `index.ts`.
+https://gist.github.com/gargakshit/a8b1d039713eb2e904009e3ca8da5394
+Now we can run it using `deno run index.ts`. But wait what about compiling the TypeScript into JavaScript? Deno can natively execute TypeScript, so no more `tsc` :P. So now we should see `Hello World` popup in our console. Nothing fancy? Now let's move forward.
+
+## A simple web server
