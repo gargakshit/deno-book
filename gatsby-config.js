@@ -4,7 +4,7 @@ module.exports = {
     defaultTitle: `Deno - A book`,
     siteTitleShort: `Deno-book`,
     siteDescription: `A book about deno`,
-    siteUrl: `https://deno.books.paperplane.ml`,
+    siteUrl: `https://deno.books.akshit.tech`,
     siteAuthor: `@gargakshit`,
     siteImage: `/banner.png`,
     siteLanguage: `en`,
@@ -26,7 +26,7 @@ module.exports = {
     {
       resolve: `gatsby-plugin-canonical-urls`,
       options: {
-        siteUrl: `https://deno.books.paperplane.ml`,
+        siteUrl: `https://deno.books.akshit.tech`,
       },
     },
   ],
