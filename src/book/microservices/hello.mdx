@@ -1,3 +1,190 @@
 ---
 title: Hello Microservices
 ---
+
+In this section, we will create a basic (like really basic) microservice for basic arithmetic operations like add and subtract.
+We will use JSON-RPC to communicate between services.
+
+So, let's begin by starting with a fresh project.
+
+First, we need to export our dependencies using the `deps.ts` file.
+
+```ts title=deps.ts
+export { serve } from "https://deno.land/std@0.62.0/http/server.ts";
+export { respondRpc } from "https://deno.land/x/gentleRpc/rpcServer.ts";
+export { createRemote } from "https://deno.land/x/gentleRpc/rpcClient.ts";
+```
+
+Here, we use the standard `server` module, and `respondRpc` and `createRemote` from the `gentleRpc` library.
+But why aren't the imports for gentleRpc versioned? Isn't it a good practice.
+Well at the time or writing, the latest published version of the library had an issue,
+but the `master` branch seems to be fine.
+
+So first, we will create the math service.
+
+## Creating the service
+
+Create a new folder `services` and then a folder `math` in it.
+
+Now, we need a couple of files in the `services/math` folder, namely
+`add.ts`, `subtract.ts` and `index.ts`.
+
+We will also create a `consumer.ts` file in the project root, which will later help us consume the service.
+
+The final directory structure should look like:
+
+```bash
+$ tree
+.
+├── consumer.ts
+├── deps.ts
+└── services
+    └── math
+        ├── add.ts
+        ├── index.ts
+        └── subtract.ts
+
+2 directories, 5 files
+```
+
+Now, we will start by adding the logic in the `add.ts` and `subtract.ts` files respectively.
+
+```ts file=services/math/add.ts
+export const add = (x: number, y: number): number => x + y;
+```
+
+```ts file=services/math/subtract.ts
+export const subtract = (x: number, y: number): number => x - y;
+```
+
+Well its just the basic logic for add and subtract 😅.
+
+Coming to the `services/math/index.ts` file, we will start by importing
+`serve` and `respondRpc` modules from the `deps.ts` file.
+
+```ts file=services/math/index.ts
+import { serve, respondRpc } from "../../deps.ts";
+```
+
+We will also import the `add.ts` and `subtract.ts` files now.
+
+```ts file=services/math/index.ts
+import { add } from "./add.ts";
+import { subtract } from "./subtract.ts";
+```
+
+Now, we will create a new instance of the `serve` module,
+and subsequently creating a `service`.
+
+```ts file=services/math/index.ts
+const server = serve({ port: 9876 });
+
+const mathService = {
+  add,
+  subtract,
+};
+```
+
+Here, we use the port `9876` as our JSON-RPC port.
+
+As we learnt in the [simple web server section](/hello-world/web-server),
+`serve` creates an async iterable. We can iterate over it, and respond to the RPC requests.
+
+```ts file=services/math/index.ts
+for await (const req of server) {
+  await respondRpc(req, service);
+}
+```
+
+Here, we respond to the RPC request using the `respondRpc` module of the `gentleRpc` library.
+
+To sum up the code,
+
+```ts file=services/math/index.ts
+import { serve, respondRpc } from "../../deps.ts";
+import { add } from "./add.ts";
+import { subtract } from "./subtract.ts";
+
+const server = serve({ port: 9876 });
+
+const service = {
+  add,
+  subtract,
+};
+
+console.log("RPC server starting at :9876");
+
+for await (const req of server) {
+  await respondRpc(req, service);
+}
+```
+
+## The consumer
+
+We just created a math service, but we need something to consume it.
+Here, we will create the consumer for the service, that adds and subtracts two numbers (pretty basic right? its pretty powerful).
+
+We will start by creating a new file named `consumer.ts`,
+and subsequently importing the `createRemote` module from the `gentleRpc` library.
+
+```ts title=consumer.ts
+import { createRemote } from "./deps.ts";
+```
+
+Now, we will create a new remote to the RPC server listening on port `9876`.
+
+```ts title=consumer.ts
+const remote = createRemote("http://localhost:9876");
+```
+
+Now, we can consume the methods we exposed via RPC.
+
+```ts title=consumer.ts
+console.log("Adding 10 and 2 gives", await remote.add(10, 2));
+console.log("Subtracting 10 from 2 gives", await remote.subtract(10, 2));
+```
+
+> Here we used top-level `await`s
+
+To sum up the consumer code,
+
+```ts title=consumer.ts
+import { createRemote } from "./deps.ts";
+
+const remote = createRemote("http://localhost:9876");
+
+console.log("Adding 10 and 2 gives", await remote.add(10, 2));
+console.log("Subtracting 10 from 2 gives", await remote.subtract(10, 2));
+```
+
+## Running the service
+
+Now, its pretty simple to run the service,
+
+```bash
+$ deno run --allow-net services/math/index.ts
+Check file:///Users/akshitgarg/dev/learn/deno/part-2/services/math/index.ts
+RPC server starting at :9876
+```
+
+Why did we use the `--allow-net` flag here?
+Well we exposed the RPC server on HTTP, so the `net` permission is required.
+Same for the consumer, it needs to consume the RPC service running on HTTP, so it needs the `net` permission too.
+
+Now, as the service is up, let's try running the consumer
+
+```bash
+$ deno run --allow-net consumer.ts
+Check file:///Users/akshitgarg/dev/learn/deno/part-2/consumer.ts
+Adding 10 and 2 gives 12
+Subtracting 10 from 2 gives 8
+```
+
+12, which is surely the sum of 10 and 2 are back from the RPC service.
+
+## TL;DR
+
+Here, we implemented the microservice pattern, but on a very basic level.
+We created a math service, and a consumer to consume the service and print the addition and the difference of two numbers.
+
+The code for this section is available [here](https://github.com/gargakshit/deno-book-code/tree/microservices-1).
