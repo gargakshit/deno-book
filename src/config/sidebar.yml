@@ -21,11 +21,11 @@
     - label: "Deep Dive into Routing"
       link: "/http/routing-advanced"
     - label: "Cookies"
-      link: "/http/routing-advanced"
+      link: "/http/cookies"
     - label: "Middleware"
-      link: "/http/routing-advanced"
+      link: "/http/middleware"
     - label: "TL;DR"
-      link: "/http/routing-advanced"
+      link: "/http/tldr"
 
 - label: "Microservices with Deno"
   items:
