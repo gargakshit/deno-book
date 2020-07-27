@@ -2,3 +2,15 @@
 
 - label: "Introduction"
   link: "/"
+
+- label: "Hello World"
+  items:
+    - label: "Getting Started"
+      link: "/hello-world/intro"
+    - label: "A simple web server"
+      link: "/hello-world/web-server"
+
+- label: "More HTTP"
+  items:
+    - label: "Introduction"
+      link: "/http/intro"

@@ -1,0 +1,132 @@
+---
+title: Hello HTTP
+---
+
+Assuming that you completed the [intro](/hello-world/intro), we will start by creating another file named `server.ts`.
+We will start by importing the http server module, which is included with deno's standard library.
+
+```ts
+import { serve } from "https://deno.land/std@0.62.0/http/server.ts";
+```
+
+Here, we imported the `serve` module directly from `https://deno.land/std@0.62.0/http/server.ts`.
+In deno, imports can be from the network, meaning no more `npm install` and `yarn`.
+This helps with not having the `node_modules` folder, and no more polluted paths due to global dependencies.
+
+Continuing on the HTTP server part, next we need to declare the server variable.
+
+```ts
+const server = serve({ port: 3000 });
+```
+
+Here, we create the `server` variable as an instance of the `serve` module we just imported.
+
+Next, we need a way to handle the incoming HTTP requests.
+`serve` creates an async iterable which we can iterate over and respond to requests like:
+
+```ts
+for await (const req of server) {
+  req.respond({ body: "Hello World" });
+}
+```
+
+Next, fire up a terminal, and run `deno run server.ts`.
+You will see the following:
+
+```log
+error: Uncaught PermissionDenied: network access to "0.0.0.0:3000", run again with the --allow-net flag
+    at unwrapResponse (rt/10_dispatch_json.js:25:13)
+    at sendSync (rt/10_dispatch_json.js:52:12)
+    at opListen (rt/30_net.js:33:12)
+    at Object.listen (rt/30_net.js:204:17)
+    at serve (server.ts:287:25)
+    at index.ts:3:16
+```
+
+Oopsie! What is this? This is a deno's feature, not a bug :P.
+Deno, by default, is secure, which means you need to manually specify the permissions to allow.
+Here, we need access to the network, we can allow that using the `--allow-net` flag.
+
+Now rerun this with `deno run --allow-net server.ts`.
+Now you should be able to run it, and opening [localhost:3000](http://localhost:3000)
+
+## Routing
+
+We successfully built a (really) basic HTTP server, but what about routing?
+How to handle routes?
+In this part, we will extend our http server with some routes.
+
+We will start by declaring a new `enum` with the name `Routes`
+
+```ts
+enum Routes {
+  HOME = "/",
+  USERS = "/users",
+  POSTS = "/posts",
+}
+```
+
+Now in our for loop, replace its contents with the following:
+
+```ts
+for await (const req of server) {
+  switch (req.url) {
+    case Routes.HOME:
+      req.respond({ body: "Hello from home" });
+      break;
+
+    case Routes.USERS:
+      req.respond({ body: "Hello from users" });
+      break;
+
+    case Routes.POSTS:
+      req.respond({ body: "Hello from posts" });
+      break;
+
+    default:
+      req.respond({ body: "Aw snap, this is a 404", status: 404 });
+      break;
+  }
+}
+```
+
+Here, we check for each route in our `enum` using `switch case` statements.
+As our app grows, this will become more complex, and eventually unmaintainable.
+To solve this, in our next section, we will use a deno HTTP framework which abstracts this all for us, making it maintainable again.
+
+## TL;DR
+
+In this section, we created a basic HTTP server using deno's standard library. The code for the same is as follows:
+
+```ts
+import { serve } from "https://deno.land/std@0.62.0/http/server.ts";
+
+const server = serve({ port: 3000 });
+
+enum Routes {
+  HOME = "/",
+  USERS = "/users",
+  POSTS = "/posts",
+}
+
+for await (const req of server) {
+  switch (req.url) {
+    case Routes.HOME:
+      req.respond({ body: "Hello from home" });
+      break;
+
+    case Routes.USERS:
+      req.respond({ body: "Hello from users" });
+      break;
+
+    case Routes.POSTS:
+      req.respond({ body: "Hello from posts" });
+      break;
+
+    default:
+      req.respond({ body: "Aw snap, this is a 404", status: 404 });
+      break;
+  }
+}
+
+```
