@@ -5,7 +5,7 @@ title: Hello HTTP
 Assuming that you completed the [intro](/hello-world/intro), we will start by creating another file named `server.ts`.
 We will start by importing the http server module, which is included with deno's standard library.
 
-```ts
+```ts title=server.ts
 import { serve } from "https://deno.land/std@0.62.0/http/server.ts";
 ```
 
@@ -15,7 +15,7 @@ This helps with not having the `node_modules` folder, and no more polluted paths
 
 Continuing on the HTTP server part, next we need to declare the server variable.
 
-```ts
+```ts title=server.ts
 const server = serve({ port: 3000 });
 ```
 
@@ -24,7 +24,7 @@ Here, we create the `server` variable as an instance of the `serve` module we ju
 Next, we need a way to handle the incoming HTTP requests.
 `serve` creates an async iterable which we can iterate over and respond to requests like:
 
-```ts
+```ts title=server.ts
 for await (const req of server) {
   req.respond({ body: "Hello World" });
 }
@@ -58,7 +58,7 @@ In this part, we will extend our http server with some routes.
 
 We will start by declaring a new `enum` with the name `Routes`
 
-```ts
+```ts title=server.ts
 enum Routes {
   HOME = "/",
   USERS = "/users",
@@ -68,7 +68,7 @@ enum Routes {
 
 Now in our for loop, replace its contents with the following:
 
-```ts
+```ts title=server.ts
 for await (const req of server) {
   switch (req.url) {
     case Routes.HOME:
@@ -98,7 +98,7 @@ To solve this, in our next section, we will use a deno HTTP framework which abst
 
 In this section, we created a basic HTTP server using deno's standard library. The code for the same is as follows:
 
-```ts
+```ts title=server.ts
 import { serve } from "https://deno.land/std@0.62.0/http/server.ts";
 
 const server = serve({ port: 3000 });
