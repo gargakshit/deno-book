@@ -1,0 +1,101 @@
+---
+title: Routing
+---
+
+In the [previous section](/http/hello-oak), we started with oak, which is a middleware framework for deno, inspired by koa.
+In this section, we will learn the basics of routing.
+
+So first, we need to export the `Router` module along with the `Application` module in our `deps.ts` file.
+
+```ts title=deps.ts
+export { Application, Router } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
+
+Now we are ready to start complex routing.
+First step would be to create a new folder named `routes`, and create the files `dino.ts` and `index.ts` in it.
+The folder structure should now look like:
+
+```bash
+$ tree
+.
+├── deps.ts
+├── index.ts
+└── routes
+    ├── dino.ts
+    └── index.ts
+
+1 directory, 4 files
+```
+
+Now in the `routes/dino.ts` file, we will start by importing the `Router` module.
+
+```ts title=routes/dino.ts
+import { Router } from "../deps.ts";
+```
+
+Now, we will create a new instance of the `Router` class, and give it a prefix of `/dino`.
+This will make our router available on the `/deno` route of the server.
+
+```ts title=routes/dino.ts
+const router = new Router({
+  prefix: "/dino",
+});
+```
+
+Now, we can create a `/hello` resource for the router as follows:
+
+```ts title=routes/dino.ts
+router.get("/hello", (ctx) => {
+  ctx.response.body = "Mr. Dino says Hello!";
+});
+```
+
+The `ctx` parameter follows a very similar API to koa's `Context`.
+The full API docs can be found [here](https://github.com/oakserver/oak#context).
+
+Now, we can export the router to be used in other files.
+
+```ts title=routes/dino.ts
+export default router;
+```
+
+Now, in our `routes/index.ts` file, we can export the `dino` router.
+
+```ts title=routes/index.ts
+import DinoRouter from "./dino.ts";
+
+export { DinoRouter };
+```
+
+This allows us to import all our routes from the `routes/index.ts` file, resulting in a cleaner code.
+
+Now, we need to mount this route to our application.
+The `Router.routes()` function exports a middleware, which we can use in our oak application.
+
+Now, in our `index.ts` file, we need to import the routes previously exported.
+To do this, add the following after the import from `deps.ts`
+
+```ts title=index.ts
+import { DinoRouter } from "./routes/index.ts";
+```
+
+Notice that here we import `DinoRouter` from `./routes/index.ts` instead of `./routes`.
+This is a part of deno's goal to be browser compatible, as `import` in the browser requires the full path including the file extension.
+
+Now back on the application, we can now use the middleware imported in our app.
+
+```ts title=index.ts
+app.use(DinoRouter.routes());
+```
+
+As explained earlier, a `Router.routes()` is an oak middleware which we can consume using `app.use(<middleware>)`.
+
+Finally, run the application with `deno run --allow-net index.ts`.
+Opening `localhost:3000/dino/hello` should give "Mr. Dino says Hello!", which means we've successfully used the `DinoRouter`.
+
+In the next section, we will learn more advance routing methods, and HTTP verbs.
+
+## TL;DR
+
+In this section, we learnt how to create a new `Router` and use it in our application.
+The code for the same is available [here](https://github.com/gargakshit/deno-book-code/tree/basic-routing).

@@ -16,3 +16,5 @@
       link: "/http/intro"
     - label: "Hello Oak"
       link: "/http/hello-oak"
+    - label: "Routing"
+      link: "/http/routing-basics"

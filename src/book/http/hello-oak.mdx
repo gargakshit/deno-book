@@ -5,3 +5,88 @@ title: Hello Oak
 So what exactly is oak? Oak is a a middleware framework for Deno's http server, and includes a router middleware for easy routing.
 
 To setup oak, we will first create a `deps.ts` file, which will help us manage the dependencies as deno doesn't use a `package.json` or similar.
+
+```ts title=deps.ts
+export { Application } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
+
+Here, we export the `Application` module from `https://deno.land/x/oak@v6.0.1/mod.ts`.
+We used oak version `v6.0.1`.
+
+## Oak Hello World
+
+So, let's begin by creating a hello world in oak.
+Open up a new file named index.ts, and start by importing the `Application` module from `deps.ts`
+
+```ts title=index.ts
+import { Application } from "./deps.ts";
+```
+
+Now, we need to instantiate the Application class.
+
+```ts title=index.ts
+const app = new Application();
+```
+
+Next, we need to start our `app` on a HTTP port.
+
+```ts title=index.ts
+console.log("Starting on http://localhost:3000");
+await app.listen({ port: 3000 });
+```
+
+Notice how we used `await` on the top-level.
+Deno has support for top-level `await`, meaning no more `async function main()`.
+
+So now, start the application using your command line.
+
+```bash
+$ deno run --allow-net index.ts
+Check file:///Users/akshitgarg/dev/learn/deno/part-2/index.ts
+Starting on http://localhost:3000
+error: Uncaught TypeError: There is no middleware to process requests.
+      throw new TypeError("There is no middleware to process requests.");
+            ^
+    at Application.listen (application.ts:348:13)
+    at index.ts:29:11
+```
+
+Oops!
+
+So as you know, oak is a middleware framework, it needs atleast one middleware to start-up.
+Oak's API is very similar to node's koa.
+Now we will create a "Hello World" middleware.
+
+Now before the listen line, add
+
+```ts title=index.ts
+app.use((ctx) => {
+  ctx.response.body = "Hello World!";
+});
+```
+
+After doing this, run the server again.
+This time, the server should successfully start up, and opening `localhost:3000` should show us "Hello World!".
+
+In the next section, we will learn basics of routing with oak.
+
+## TL;DR
+
+In this section, we created a basic HTTP server using oak. The code for the same is as follows:
+
+```ts title=index.ts
+import { Application } from "./deps.ts";
+
+const app = new Application();
+
+app.use((ctx) => {
+  ctx.response.body = "Hello World!";
+});
+
+console.log("Starting on http://localhost:3000");
+await app.listen({ port: 3000 });
+```
+
+```ts title=deps.ts
+export { Application } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
