@@ -1,0 +1,20 @@
+---
+title: Introduction to Microservices
+---
+
+Have you heard of the new buzz-word floating around knows as microservices.
+So what exactly are microservices?
+
+Microservice architecture is a way to structure your app in which many the functionality is split up into smaller services
+known as microservices.
+These microservices can communicate with each other using techniques like RPC (Remote Procedure Calls),
+or by using a messaging queue like rabbitmq.
+
+## Benefits
+
+- Your application is more maintainable, thanks to smaller chunks of code to work at once
+- Easier collaboration, like each team can work on one microservice
+- In production, you can update a service without affecting other parts of your application, resulting in lower error probabilities
+
+In this section, we will learn to create microservices, and how to communicate between them using JSON-RPC.
+Why not gRPC? Well deno doesn't (yet) have a well documented gRPC library.

@@ -20,3 +20,16 @@
       link: "/http/routing-basics"
     - label: "Deep Dive into Routing"
       link: "/http/routing-advanced"
+    - label: "Cookies"
+      link: "/http/routing-advanced"
+    - label: "Middleware"
+      link: "/http/routing-advanced"
+    - label: "TL;DR"
+      link: "/http/routing-advanced"
+
+- label: "Microservices with Deno"
+  items:
+    - label: "Introduction"
+      link: "/microservices/intro"
+    - label: "Hello Microservices"
+      link: "/microservices/hello"
