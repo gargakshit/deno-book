@@ -18,3 +18,5 @@
       link: "/http/hello-oak"
     - label: "Routing"
       link: "/http/routing-basics"
+    - label: "Deep Dive into Routing"
+      link: "/http/routing-advanced"

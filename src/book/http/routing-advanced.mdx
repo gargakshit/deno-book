@@ -1,0 +1,168 @@
+---
+title: Advanced Routing
+---
+
+In the [previous section](/http/routing-basics), we covered the basics of routing with oak.
+In this section, we will cover advanced routing, with HTTP verbs and route parameters.
+
+## Route Parameters
+
+Route parameters are a basic part of dynamic routing.
+In this section, we will be able to query the API using routes like `/dino/t-rex` and `/dino/stegosaurus`,
+but this doesn't mean we will create a new route for each dinosaur on the list.
+This is when dynamic routing and route parameters come into play.
+They allow us to query the routes dynamically.
+
+To being with, open your `routes/dino.ts` file created in the last section.
+Add a new `router.get` call to handle the dynamic route.
+
+```ts file=routes/dino.ts
+router.get("/:dino", (ctx) => {
+  ctx.response.body = `Mr. ${ctx.params.dino} says Hello!`;
+});
+```
+
+Now, starting the application and loading `localhost:3000/dino/t-rex` in the browser will show "Mr. t-rex says Hello!",
+which means we have successfully made a dynamic route.
+
+Now on the code part. How does it work?
+
+Here, we created a HTTP GET route for `/dino/:dino`, where `:dino` means that oak will accept a route parameter
+and expose it using the `ctx.params` object. The `:dino` passed in the URL will be available as `ctx.params.dino`.
+It means that if we were to replace `:dino` with `:dinosaur`, we should be able to access the same using `ctx.params.dinosaur`.
+
+## Query Parameters
+
+Query parameters work in a similar fashion as route parameters, but they have one major difference.
+You can pass multiple query parameters to an endpoint as opposed to one with route parameters, but route parameters, in general are much cleaner.
+
+Query parameters are the things you pass to the endpoint using `?`.
+An example of an endpoint with query parameters is `localhost:3000/dino?name=t-rex&age=31`.
+Here, we pass the `name` and the `age` parameter to `localhost:3000/dino` endpoint.
+
+Oak has full support for query parameters.
+
+First, we need to export `helpers` in the `deps.ts` file.
+The updated `deps.ts` file looks like:
+
+```ts title=deps.ts
+export {
+  Application,
+  Router,
+  helpers,
+} from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
+
+Also, we need to update the imports in the `routes/dino.ts` file to look like following:
+
+```ts title=routes/dino.ts
+import { Router, helpers } from "../deps.ts";
+```
+
+The `helpers` contains the function `getQuery`, which allows us to extract the query parameters from the `ctx`.
+
+Now add a new `get` handler like:
+
+```ts title=routes/dino.ts
+router.get("/", (ctx) => {
+  const query = helpers.getQuery(ctx);
+
+  ctx.response.body = `Hello, I am ${query.name}. I am ${query.age} years old.`;
+});
+```
+
+Here, we create a new `query` object which has the query parameters passed with the endpoint.
+Firing up the server and visiting `localhost:3000/dino?name=t-rex&age=31` should say
+"Hello, I am t-rex. I am 31 years old."
+
+## HTTP verbs
+
+Till now, we only covered HTTP GET requests, but oak (and deno's standard module server) can do a lot more.
+HTTP verbs are a part of the HTTP protocol to give more info to the server about the operation the client is willing to perform.
+For example a `POST` request will tell the server that the client wants to add new data, and so on.
+
+There are many HTTP verbs, including:
+
+- GET
+- POST
+- PUT
+- DELETE
+- PATCH
+- HEAD
+
+and a lot more...
+
+For the sake of simplicity, we will be concentrating on `GET` and `POST` for this section,
+as all of the methods share a similar API.
+
+Let's start with a `POST` request here.
+`POST` requests are commonly used to add some data onto the server-side (database or something else?).
+Subsequently, `POST` requests can accept data, which `GET` requests can't.
+
+Let's start by opening the `routes/dino.ts` file. Here, we will make a new `POST` resource on the `/dino/new` endpoint.
+
+```ts file=routes/dino.ts
+router.post("/new", (ctx) => {
+  ctx.response.body = "Hello from POST, Mr. Client!";
+});
+```
+
+Browsers can't directly make a `POST` request, so here we need to use something like [postman](http://getpostman.com)
+or [cURL](https://github.com/curl/curl) to test the API. Here, I will be using cURL.
+
+Now, lets fire up the server, and open another terminal to use cURL.
+
+```bash
+$ curl -X POST http://localhost:3000/dino/new
+Hello from POST, Mr. Client!
+```
+
+Here, we use cURL to make a `POST` request to `localhost:3000/dino/new`.
+"Hello from POST, Mr. Client!" comes back as the response.
+We successfully made a `POST` resource.
+Opening the same endpoint in the browser will result in a 404 error, which is expected as the endpoint only accepts a `POST` request.
+
+We can implement `PUT` by using `app.put()`, and `DELETE` by `app.delete()` in a similar fashion.
+Oak supports many more HTTP verbs.
+
+HTTP verbs are also known as HTTP methods.
+
+## Sending Data
+
+HTTP verbs like `POST`, `PUT` and `DELETE` can accept data.
+It can by anything, like JSON, XML, and even binary.
+
+Oak has native support for `form`, `form-data`, `json`, `raw` and `text` data types.
+
+For this part, we will mostly focus on JSON data, but parsing `form-data`, or anything else supported by oak should be just as easy as JSON.
+
+We would be changing the `/dino/new` endpoint to accept a name as JSON.
+First, it needs to be async, as parsing JSON in oak needs to be `await`ed.
+
+```ts title=routes/dino.ts
+router.post("/new", async (ctx) => {
+  const data = await ctx.request.body({
+    type: "json",
+  }).value;
+
+  ctx.response.body = `A dino with name ${data.name} created`;
+});
+```
+
+Here, we use the `ctx.response.body().value` promise to get the JSON data.
+`data.name` means that we are using the `name` key in the `data` object which is the parsed JSON sent to the server.
+
+Now, lets fire up the server, and open another terminal to use cURL.
+
+```bash
+$ curl -X POST -d '{"name": "Mr Saurs"}' http://localhost:3000/dino/new
+A dino with name Mr Saurs created
+```
+
+Here, we made a `POST` request to `localhost:3000/dino/new` with some data.
+"A dino with name Mr Saurs created" came back as the response, meaning we successfully sent, and parsed the data.
+
+## TL;DR
+
+In this section, we learnt how to make dynamic routes with query parameters and route parameters, different HTTP verbs and sending some data to the server.
+The code for the same is available [here](https://github.com/gargakshit/deno-book-code/tree/advanced-routing).
