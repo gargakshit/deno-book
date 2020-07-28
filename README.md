@@ -6,6 +6,9 @@
   <img src="https://img.shields.io/badge/PRs-welcome-%237159c1.svg" alt="PRs welcome!" />
 </p>
 
+The book is a work-in-progress.
+You can view the current progress [here](https://deno.books.akshit.tech)
+
 ## License
 
 All code is licensed under the MIT license
