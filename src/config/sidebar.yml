@@ -33,3 +33,5 @@
       link: "/microservices/intro"
     - label: "Hello Microservices"
       link: "/microservices/hello"
+    - label: "Integrating with HTTP"
+      link: "/microservices/http-integration"

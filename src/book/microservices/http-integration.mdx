@@ -1,0 +1,153 @@
+---
+title: Integration with HTTP
+---
+
+In the [previous section](/microservices/hello), we made a math server, and a consumer
+to consume them and print out the result to the console. In this section,
+we will integrate it with `oak` as an API gateway.
+
+We will be continuing the code from the previous section.
+First step is to delete the `consumer.ts` file,
+and add `oak` as a dependency to the `deps.ts` file.
+
+```ts title=deps.ts
+export { Application, Router } from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
+
+Now, we will create a new folder named `gateway`, and create `index.ts` and `consumer.ts` files in it.
+In the `gateway` folder, we will add another folder named `routes`, and create `index.ts` and `math.ts` files in it.
+
+Final directory structure should look like:
+
+```bash
+$ tree
+.
+├── README.md
+├── deps.ts
+├── gateway
+│   ├── consumer.ts
+│   ├── index.ts
+│   └── routes
+│       ├── index.ts
+│       └── math.ts
+└── services
+    └── math
+        ├── add.ts
+        ├── index.ts
+        └── subtract.ts
+
+4 directories, 9 files
+```
+
+Now, in the `gateway/consumer.ts` file, we will first import the `createRemote` module from `deps.ts`.
+We will also create a RPC remote to `localhost:9876` as our math service is listening on port `9876`.
+
+```ts title=gateway/consumer.ts
+import { createRemote } from "../deps.ts";
+
+export const remote = createRemote("http://localhost:9876");
+```
+
+Notice here we export the `remote`, as we will use it later.
+
+Now, in the `gateway/routes/math.ts` file, we will start by importing the `Router` module of oak from `deps.ts`.
+We will also import the `remote` we exported in the `gateway/consumer.ts` file.
+
+```ts title=gateway/routes/math.ts
+import { Router } from "../../deps.ts";
+import { remote } from "../consumer.ts";
+```
+
+Now, we will create a new `Router` instance with the prefix of `/math`, as we will expose the endpoints on `/math/add` and `/math/subtract`.
+
+```ts title=gateway/routes/math.ts
+const router = new Router({
+  prefix: "/math",
+});
+```
+
+Now, we will create the routes themselves.
+We will make use of route parameters, which were explained in the [Deep Dive into Routing](/http/routing-advanced) section.
+
+```ts title=gateway/routes/math.ts
+router.get("/add/:a/:b", async (ctx) => {
+  const result = await remote.add(Number(ctx.params.a), Number(ctx.params.b));
+
+  ctx.response.body = result;
+});
+
+router.get("/subtract/:a/:b", async (ctx) => {
+  const result = await remote.subtract(
+    Number(ctx.params.a),
+    Number(ctx.params.b)
+  );
+
+  ctx.response.body = result;
+});
+```
+
+Here, we accept `a` and `b` as the route parameters, and then typecast it to `number` and subsequently call the method using RPC, and then return the result.
+
+Finally, we need to export the router to allow our oak server to use it as a middleware.
+
+```ts file=gateway/routes/math.ts
+export default router;
+```
+
+Setting up our `gateway/routes/index.ts` file, we need to first import, and then export the `mathRouter` from `gateway/routes/math.ts` file.
+
+```ts title=gateway/routes/index.ts
+import mathRouter from "./math.ts";
+
+export { mathRouter };
+```
+
+Coming to the oak server, the `gateway/index.ts` will server as the entrypoint for our API gateway.
+
+First, we will import the `Application` module from `deps.ts`
+and the `mathRouter` from the `gateway/routes/index.ts` file.
+
+```ts title=gateway/index.ts
+import { Application } from "../deps.ts";
+import { mathRouter } from "./routes/index.ts";
+```
+
+Now, we will make a new instance of the application class,
+as well as consume the middleware provided by `mathRouter.routes()`.
+
+```ts title=gateway/index.ts
+const app = new Application();
+
+app.use(mathRouter.routes());
+```
+
+Finally, let's start the application using the `listen` function.
+
+```ts title=gateway/index.ts
+console.log("Listening on :3000");
+await app.listen({ port: 3000 });
+```
+
+Summing up the `gateway/index.ts` file,
+
+```ts title=gateway/index.ts
+import { Application } from "../deps.ts";
+import { mathRouter } from "./routes/index.ts";
+
+const app = new Application();
+
+app.use(mathRouter.routes());
+
+console.log("Listening on :3000");
+await app.listen({ port: 3000 });
+```
+
+Now, let's start the service and the gateway.
+
+Opening `localhost:3000/math/add/1/2` should result in 3 as the result.
+We did it, we exposed the service as an API.
+
+## TL;DR
+
+In this section, we integrated our service with HTTP and oak.
+The code for this section is available [here](https://github.com/gargakshit/deno-book-code/tree/microservices-2).
