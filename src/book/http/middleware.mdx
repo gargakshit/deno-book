@@ -2,4 +2,149 @@
 title: Middleware
 ---
 
-WIP
+So what exactly is middleware?
+Middleware is a function that is executed in the middle of something (literally?).
+For example, we have a webserver.
+Now, we need to inject a header for the time taken to complete a request.
+The function to do the same should run after the request is processed, and before the response is sent.
+This is where middleware comes into play.
+It is executed in between of other handlers (the handlers could be middlewares too).
+Middlewares are very powerful.
+In-fact, oak, the framework we used for HTTP is a middleware framework over deno's standard HTTP modules.
+
+In this section, we will create a basic middleware that logs the requests into the console.
+We will re-use the code from the [Routing Basics](/http/routing-basics) section.
+
+We will start by creating a new `middleware` folder.
+Subsequently, we will create two files, `index.ts` and `logger.ts` in it.
+
+We will also create a `types.ts` file in our project root.
+This will later write the type definations.
+
+The directory structure should look like:
+
+```bash
+$ tree
+.
+├── deps.ts
+├── index.ts
+├── middleware
+│   ├── index.ts
+│   └── logger.ts
+├── routes
+│   ├── dino.ts
+│   └── index.ts
+└── types.ts
+
+2 directories, 7 files
+```
+
+In the `deps.ts` file, we will add `Context` to the existing `oak` import.
+This will later help us `type` the middleware.
+The final deps.ts should look like:
+
+```ts title=deps.ts
+export {
+  Application,
+  Router,
+  Context,
+} from "https://deno.land/x/oak@v6.0.1/mod.ts";
+```
+
+Now, in the `types.ts` file, we will define the `type` of `NextFunction`, which is used in the middleware functions.
+
+```ts title=types.ts
+export type NextFunction = () => Promise<void>;
+```
+
+Here, we exported a type `NextFunction` with the signature as a function returning a promise.
+
+Now, in the `middleware/logger.ts` file, we will import the `Context` module from `deps.ts`.
+We will also import the `NextFunction` type from `types.ts`.
+
+```ts title=logger.ts
+import { Context } from "../deps.ts";
+import { NextFunction } from "../types.ts";
+```
+
+Now, we will create a new function named `loggerMiddleware`
+with two parameters, first one being the `Context`, and the second one `NextFunction`.
+
+```ts title=logger.ts
+export async function loggerMiddleware(ctx: Context, next: NextFunction) {}
+```
+
+The function needs to be async, as we need to await the `NextFunction`, which is a function returning a promise.
+We will also export it, as we later need to import and use it.
+
+Continuing, we will define the middleware itself.
+
+```ts title=logger.ts
+export async function loggerMiddleware(ctx: Context, next: NextFunction) {
+  await next();
+  console.log(
+    `[${ctx.request.method}] ${ctx.response.status} ${ctx.request.url}`
+  );
+}
+```
+
+Here, we wait for the next middleware to execute, then console log the request's method (`GET`, `POST`, etc), its status, and its URL.
+
+Now, we in the `middleware/index.ts` file, we need to export the `loggerMiddleware` from `middleware/logger.ts`.
+
+```ts title=middleware/index.ts
+export { loggerMiddleware } from "./logger.ts";
+```
+
+We could later import the `loggerMiddleware` directly,
+but using an `index.ts` file results in a more readable code when we have multiple middleware.
+
+Finally, in our `index.ts` file, we will import the middleware.
+Our imports will look like:
+
+```ts title=index.ts
+import { Application } from "./deps.ts";
+import { loggerMiddleware } from "./middleware/index.ts";
+import { DinoRouter } from "./routes/index.ts";
+```
+
+And finally we can use the middleware like:
+
+```ts title=index.ts
+app.use(loggerMiddleware);
+```
+
+Our `index.ts` will now look like:
+
+```ts title=index.tsimport { Application } from "./deps.ts";
+import { loggerMiddleware } from "./middleware/index.ts";
+import { DinoRouter } from "./routes/index.ts";
+
+const app = new Application();
+
+app.use(loggerMiddleware);
+app.use(DinoRouter.routes());
+
+console.log("Starting on http://localhost:3000");
+await app.listen({ port: 3000 });
+```
+
+Notice, here we used the `loggerMiddleware` before the router itself,
+as oak chains middleware. They are executed in the same order as they are `use`d.
+
+Now, running a server and hitting an endpoint should result in:
+
+```bash
+$ deno run --allow-net index.ts
+Check file:///Users/akshitgarg/dev/learn/deno/part-2/index.ts
+Starting on http://localhost:3000
+[GET] 404 http://localhost:3000/
+[GET] 200 http://localhost:3000/dino/hello
+```
+
+We successfully logged the requests using a middleware.
+
+## TL;DR
+
+In this section, we created a middleware that logs the requests.
+The code for the same is available [here](https://github.com/gargakshit/deno-book-code/tree/http-middleware).
