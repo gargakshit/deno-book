@@ -20,10 +20,10 @@
       link: "/http/routing-basics"
     - label: "Deep Dive into Routing"
       link: "/http/routing-advanced"
-    - label: "Cookies"
-      link: "/http/cookies"
     - label: "Middleware"
       link: "/http/middleware"
+    - label: "Cookies"
+      link: "/http/cookies"
     - label: "TL;DR"
       link: "/http/tldr"
 
